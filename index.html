@@ -3,240 +3,191 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>文心一言 - 个人资产下载</title>
+<title>文心一言 - 个人数据资产下载</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6f8; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6f8; min-height: 100vh; padding: 40px 20px; }
 
-.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; }
+.container { max-width: 900px; margin: 0 auto; }
 
-.modal { background: #fff; border-radius: 16px; width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
-.modal-header { padding: 24px 28px 0; display: flex; justify-content: space-between; align-items: center; }
-.modal-header h2 { font-size: 18px; font-weight: 600; color: #1a1a1a; }
-.modal-close { width: 28px; height: 28px; border: none; background: #f0f0f0; border-radius: 50%; cursor: pointer; font-size: 16px; color: #666; display: flex; align-items: center; justify-content: center; }
-.modal-close:hover { background: #e0e0e0; }
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 12px; }
+.page-desc { font-size: 13px; color: #666; line-height: 1.8; background: #fff8e6; border: 1px solid #ffe58f; border-radius: 8px; padding: 12px 16px; }
+.page-desc strong { color: #d4380d; }
 
-.modal-desc { padding: 12px 28px 0; font-size: 13px; color: #999; line-height: 1.6; }
+.card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
 
-.modal-body { padding: 20px 28px; }
+.card-header { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+.card-header-left { display: flex; align-items: center; gap: 12px; }
+.card-header-left input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4e6ef2; cursor: pointer; }
+.card-header-left label { font-size: 14px; color: #333; cursor: pointer; }
+.btn-batch { padding: 8px 20px; background: #4e6ef2; color: #fff; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500; }
+.btn-batch:hover { background: #3d5bd9; }
+.btn-batch:disabled { background: #c5d0f9; cursor: not-allowed; }
 
-.select-all { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; margin-bottom: 8px; }
-.select-all label { font-size: 14px; color: #333; font-weight: 500; cursor: pointer; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #fafafa; padding: 12px 16px; font-size: 13px; color: #666; font-weight: 500; text-align: left; border-bottom: 1px solid #f0f0f0; }
+th:first-child { padding-left: 24px; width: 40px; }
+td { padding: 14px 16px; font-size: 13px; color: #333; border-bottom: 1px solid #f8f8f8; vertical-align: middle; }
+td:first-child { padding-left: 24px; }
+tr:last-child td { border-bottom: none; }
 
-.asset-list { list-style: none; }
-.asset-item { display: flex; align-items: center; padding: 14px 0; border-bottom: 1px solid #f8f8f8; }
-.asset-item:last-child { border-bottom: none; }
-.asset-item input[type="checkbox"] { width: 18px; height: 18px; margin-right: 12px; accent-color: #4e6ef2; cursor: pointer; }
-.asset-item label { flex: 1; cursor: pointer; }
-.asset-name { font-size: 14px; color: #1a1a1a; display: block; }
-.asset-desc { font-size: 12px; color: #999; margin-top: 3px; display: block; }
-.asset-tag { font-size: 11px; color: #4e6ef2; background: #eef1ff; padding: 2px 6px; border-radius: 3px; margin-left: 8px; }
+.asset-name { font-weight: 500; font-size: 14px; }
+.asset-desc { font-size: 12px; color: #999; margin-top: 2px; }
 
-.modal-footer { padding: 16px 28px 24px; display: flex; justify-content: flex-end; gap: 12px; }
-.btn { padding: 10px 24px; border-radius: 8px; font-size: 14px; cursor: pointer; border: none; font-weight: 500; transition: all 0.2s; }
-.btn-cancel { background: #f5f5f5; color: #666; }
-.btn-cancel:hover { background: #eee; }
-.btn-primary { background: #4e6ef2; color: #fff; }
-.btn-primary:hover { background: #3d5bd9; }
-.btn-primary:disabled { background: #c5d0f9; cursor: not-allowed; }
+.status { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 3px 8px; border-radius: 4px; }
+.status-none { color: #999; background: #f5f5f5; }
+.status-queued { color: #d48806; background: #fffbe6; }
+.status-downloading { color: #1890ff; background: #e6f7ff; }
+.status-success { color: #52c41a; background: #f6ffed; }
+.status-failed { color: #ff4d4f; background: #fff2f0; }
 
-/* 下载进度状态 */
-.download-progress { display: none; padding: 20px 28px; }
-.progress-item { margin-bottom: 16px; }
-.progress-label { display: flex; justify-content: space-between; margin-bottom: 6px; }
-.progress-name { font-size: 13px; color: #333; }
-.progress-percent { font-size: 12px; color: #4e6ef2; }
-.progress-bar { height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
-.progress-bar-fill { height: 100%; background: linear-gradient(90deg, #4e6ef2, #7b9cff); border-radius: 3px; transition: width 0.3s; }
-.progress-status { font-size: 12px; color: #999; margin-top: 4px; }
+.btn-download { padding: 5px 14px; background: #4e6ef2; color: #fff; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; }
+.btn-download:hover { background: #3d5bd9; }
+.btn-download:disabled { background: #e0e0e0; color: #999; cursor: not-allowed; }
+.btn-retry { padding: 5px 14px; background: #fff; color: #ff4d4f; border: 1px solid #ff4d4f; border-radius: 4px; font-size: 12px; cursor: pointer; }
+.btn-retry:hover { background: #fff2f0; }
+.download-link { color: #4e6ef2; text-decoration: none; font-size: 12px; }
+.download-link:hover { text-decoration: underline; }
 
-/* 完成状态 */
-.download-complete { display: none; padding: 20px 28px; text-align: center; }
-.complete-icon { width: 48px; height: 48px; background: #e8f5e9; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 24px; }
-.complete-text { font-size: 15px; color: #333; margin-bottom: 4px; }
-.complete-desc { font-size: 13px; color: #999; }
+.tips { margin-top: 16px; font-size: 12px; color: #b0b0b0; line-height: 1.8; padding: 0 4px; }
 
-/* 恢复弹窗 */
-.resume-toast { display: none; position: fixed; top: 24px; left: 50%; transform: translateX(-50%); background: #fff; border-radius: 12px; padding: 16px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); z-index: 200; display: flex; align-items: center; gap: 12px; }
-.resume-toast .toast-icon { font-size: 20px; }
-.resume-toast .toast-text { font-size: 14px; color: #333; }
-.resume-toast .toast-btn { padding: 6px 14px; background: #4e6ef2; color: #fff; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; }
-
-/* 提示栏 */
-.tips-bar { padding: 12px 28px 0; }
-.tips-bar p { font-size: 12px; color: #b0b0b0; line-height: 1.8; }
-
-/* 页面状态切换按钮 */
-.state-switcher { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; background: #fff; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); z-index: 300; }
-.state-btn { padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; cursor: pointer; background: #fff; color: #666; }
+/* 状态切换器 */
+.state-switcher { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; background: #fff; padding: 8px 12px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); z-index: 300; }
+.state-btn { padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 11px; cursor: pointer; background: #fff; color: #666; white-space: nowrap; }
 .state-btn:hover { background: #f5f5f5; }
 .state-btn.active { background: #4e6ef2; color: #fff; border-color: #4e6ef2; }
 </style>
 </head>
 <body>
 
-<!-- 恢复下载弹窗提示 -->
-<div class="resume-toast" id="resumeToast" style="display:none;">
-  <span class="toast-icon">⚠️</span>
-  <span class="toast-text">您有未完成的下载任务，是否继续？</span>
-  <button class="toast-btn" onclick="showState('progress')">继续下载</button>
-</div>
-
-<!-- 主弹窗 -->
-<div class="overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>下载个人资产</h2>
-      <button class="modal-close">×</button>
+<div class="container">
+  <div class="page-header">
+    <h1>个人数据资产下载</h1>
+    <div class="page-desc">
+      请在 <strong>2026年7月26日 0点前</strong> 完成下载。勾选需要导出的内容，点击下载按钮开始导出。下载文件较大，下载时间可能较长，建议稍晚再返回本页面查看下载结果。下载完成后，您可在操作栏点击下载链接自行存储数据资产到本地。
     </div>
-    <div class="modal-desc">
-      请在 <strong>2026年7月26日 0点前</strong> 完成下载。勾选需要导出的内容，点击确认开始下载。
-    </div>
+  </div>
 
-    <!-- 状态1：选择类目 -->
-    <div class="modal-body" id="stateSelect">
-      <div class="select-all">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-left">
         <input type="checkbox" id="selectAll" onchange="toggleAll(this)">
-        <label for="selectAll">&nbsp;全选</label>
+        <label for="selectAll">全选</label>
       </div>
-      <ul class="asset-list">
-        <li class="asset-item">
-          <input type="checkbox" id="asset1" class="asset-checkbox">
-          <label for="asset1">
-            <span class="asset-name">历史记录</span>
-            <span class="asset-desc">包含所有对话session、文档、图片、音频、视频</span>
-          </label>
-        </li>
-        <li class="asset-item">
-          <input type="checkbox" id="asset2" class="asset-checkbox">
-          <label for="asset2">
-            <span class="asset-name">个人记忆 & 指令库</span>
-            <span class="asset-desc">记忆和指令库各导出为一个txt文档</span>
-          </label>
-        </li>
-        <li class="asset-item">
-          <input type="checkbox" id="asset3" class="asset-checkbox">
-          <label for="asset3">
-            <span class="asset-name">项目</span>
-            <span class="asset-desc">项目对话session及相关上传、生成文件</span>
-          </label>
-        </li>
-        <li class="asset-item">
-          <input type="checkbox" id="asset4" class="asset-checkbox">
-          <label for="asset4">
-            <span class="asset-name">收藏内容</span>
-            <span class="asset-desc">收藏的对话、文档、图片</span>
-          </label>
-        </li>
-        <li class="asset-item">
-          <input type="checkbox" id="asset5" class="asset-checkbox">
-          <label for="asset5">
-            <span class="asset-name">创意写作Agent</span>
-            <span class="asset-desc">query与answer对话记录及相关文件</span>
-          </label>
-        </li>
-        <li class="asset-item">
-          <input type="checkbox" id="asset6" class="asset-checkbox">
-          <label for="asset6">
-            <span class="asset-name">超级智能体</span>
-            <span class="asset-desc">query与answer对话记录及相关文件</span>
-          </label>
-        </li>
-      </ul>
+      <button class="btn-batch" id="btnBatch" disabled onclick="batchDownload()">批量下载</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>资产类别</th>
+          <th>提交时间</th>
+          <th>下载状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+      </tbody>
+    </table>
+  </div>
 
-      <div class="tips-bar">
-        <p>💡 建议使用 Chrome / Edge 浏览器，大文件请在稳定网络下操作</p>
-      </div>
-    </div>
-
-    <!-- 状态2：下载进度 -->
-    <div class="download-progress" id="stateProgress">
-      <div class="progress-item">
-        <div class="progress-label">
-          <span class="progress-name">历史记录</span>
-          <span class="progress-percent">68%</span>
-        </div>
-        <div class="progress-bar"><div class="progress-bar-fill" style="width:68%"></div></div>
-        <div class="progress-status">正在打包下载... 已下载 342MB / 503MB</div>
-      </div>
-      <div class="progress-item">
-        <div class="progress-label">
-          <span class="progress-name">个人记忆 & 指令库</span>
-          <span class="progress-percent">100%</span>
-        </div>
-        <div class="progress-bar"><div class="progress-bar-fill" style="width:100%"></div></div>
-        <div class="progress-status" style="color:#4caf50;">✓ 下载完成</div>
-      </div>
-      <div class="progress-item">
-        <div class="progress-label">
-          <span class="progress-name">项目</span>
-          <span class="progress-percent">等待中</span>
-        </div>
-        <div class="progress-bar"><div class="progress-bar-fill" style="width:0%"></div></div>
-        <div class="progress-status">排队中...</div>
-      </div>
-    </div>
-
-    <!-- 状态3：下载完成 -->
-    <div class="download-complete" id="stateComplete">
-      <div class="complete-icon">✓</div>
-      <p class="complete-text">全部下载完成</p>
-      <p class="complete-desc">已下载 3 个类目，共 612MB</p>
-    </div>
-
-    <!-- 底部按钮 -->
-    <div class="modal-footer" id="footerSelect">
-      <button class="btn btn-cancel">取消</button>
-      <button class="btn btn-primary" id="btnConfirm" disabled>确认下载</button>
-    </div>
-    <div class="modal-footer" id="footerProgress" style="display:none;">
-      <button class="btn btn-cancel">最小化</button>
-    </div>
-    <div class="modal-footer" id="footerComplete" style="display:none;">
-      <button class="btn btn-primary" onclick="showState('select')">完成</button>
-    </div>
+  <div class="tips">
+    提示：下载需排队处理，预计等待时间视当前排队人数而定。如遇问题请联系客服 yiyan-service@baidu.com
   </div>
 </div>
 
 <!-- 原型状态切换器（仅供演示） -->
 <div class="state-switcher">
-  <button class="state-btn active" onclick="showState('select')">选择类目</button>
-  <button class="state-btn" onclick="showState('progress')">下载中</button>
-  <button class="state-btn" onclick="showState('complete')">下载完成</button>
-  <button class="state-btn" onclick="showResume()">恢复提示</button>
+  <button class="state-btn active" onclick="setState('initial')">初始状态</button>
+  <button class="state-btn" onclick="setState('submitted')">已提交</button>
+  <button class="state-btn" onclick="setState('partial')">部分完成</button>
+  <button class="state-btn" onclick="setState('allDone')">全部完成</button>
+  <button class="state-btn" onclick="setState('failed')">下载失败</button>
 </div>
 
 <script>
+const assets = [
+  { name: '历史对话记录', desc: '对话session、文档、图片、音频、视频' },
+  { name: '个人记忆 & 指令库', desc: '记忆和指令库' },
+  { name: '项目对话记录', desc: '项目对话session及相关上传、生成文件' },
+  { name: '收藏对话/文档/图片', desc: '收藏的对话、文档、图片' },
+  { name: '创意写作Agent', desc: '生成的最终交付文件' },
+  { name: '超级智能体', desc: 'query与answer对话记录及相关文件' }
+];
+
+const states = {
+  initial: assets.map(() => ({ status: 'none', time: '-' })),
+  submitted: assets.map(() => ({ status: 'queued', time: '2026-06-25 10:32' })),
+  partial: [
+    { status: 'success', time: '2026-06-25 10:32' },
+    { status: 'success', time: '2026-06-25 10:32' },
+    { status: 'downloading', time: '2026-06-25 10:32' },
+    { status: 'queued', time: '2026-06-25 10:32' },
+    { status: 'none', time: '-' },
+    { status: 'none', time: '-' }
+  ],
+  allDone: assets.map(() => ({ status: 'success', time: '2026-06-25 10:32' })),
+  failed: [
+    { status: 'success', time: '2026-06-25 10:32' },
+    { status: 'success', time: '2026-06-25 10:32' },
+    { status: 'failed', time: '2026-06-25 10:32' },
+    { status: 'success', time: '2026-06-25 10:32' },
+    { status: 'none', time: '-' },
+    { status: 'none', time: '-' }
+  ]
+};
+
+const statusMap = {
+  none: { label: '未下载', cls: 'status-none' },
+  queued: { label: '已提交待下载', cls: 'status-queued' },
+  downloading: { label: '下载中', cls: 'status-downloading' },
+  success: { label: '下载成功', cls: 'status-success' },
+  failed: { label: '下载失败', cls: 'status-failed' }
+};
+
+function renderTable(stateData) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = stateData.map((item, i) => {
+    const s = statusMap[item.status];
+    const canCheck = item.status === 'none' || item.status === 'failed';
+    let action = '';
+    if (item.status === 'none') action = '<button class="btn-download">下载</button>';
+    else if (item.status === 'queued' || item.status === 'downloading') action = '<button class="btn-download" disabled>下载</button>';
+    else if (item.status === 'success') action = '<a href="#" class="download-link">下载链接</a>';
+    else if (item.status === 'failed') action = '<button class="btn-retry">重新下载</button>';
+
+    return `<tr>
+      <td><input type="checkbox" class="row-check" data-index="${i}" ${canCheck ? '' : 'disabled'} onchange="updateBatch()"></td>
+      <td><div class="asset-name">${assets[i].name}</div><div class="asset-desc">${assets[i].desc}</div></td>
+      <td>${item.time}</td>
+      <td><span class="status ${s.cls}">${s.label}</span></td>
+      <td>${action}</td>
+    </tr>`;
+  }).join('');
+}
+
 function toggleAll(el) {
-  document.querySelectorAll('.asset-checkbox').forEach(cb => cb.checked = el.checked);
-  updateBtn();
-}
-document.querySelectorAll('.asset-checkbox').forEach(cb => cb.addEventListener('change', updateBtn));
-function updateBtn() {
-  const checked = document.querySelectorAll('.asset-checkbox:checked').length;
-  document.getElementById('btnConfirm').disabled = checked === 0;
-  document.getElementById('selectAll').checked = checked === 6;
+  document.querySelectorAll('.row-check:not(:disabled)').forEach(cb => cb.checked = el.checked);
+  updateBatch();
 }
 
-function showState(state) {
-  document.getElementById('stateSelect').style.display = state === 'select' ? 'block' : 'none';
-  document.getElementById('stateProgress').style.display = state === 'progress' ? 'block' : 'none';
-  document.getElementById('stateComplete').style.display = state === 'complete' ? 'block' : 'none';
-  document.getElementById('footerSelect').style.display = state === 'select' ? 'flex' : 'none';
-  document.getElementById('footerProgress').style.display = state === 'progress' ? 'flex' : 'none';
-  document.getElementById('footerComplete').style.display = state === 'complete' ? 'flex' : 'none';
-  document.getElementById('resumeToast').style.display = 'none';
+function updateBatch() {
+  const checked = document.querySelectorAll('.row-check:checked').length;
+  document.getElementById('btnBatch').disabled = checked === 0;
+}
+
+function setState(state) {
+  renderTable(states[state]);
   document.querySelectorAll('.state-btn').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
+  document.getElementById('selectAll').checked = false;
+  updateBatch();
 }
 
-function showResume() {
-  document.getElementById('resumeToast').style.display = 'flex';
-  document.querySelectorAll('.state-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-}
+function batchDownload() {}
 
-document.getElementById('btnConfirm').addEventListener('click', () => showState('progress'));
+renderTable(states.initial);
 </script>
 </body>
 </html>
