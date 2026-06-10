@@ -22,7 +22,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft
 
 .content { margin-left: 240px; flex: 1; padding: 32px 40px; }
 
-.page-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.page-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .page-title { font-size: 18px; font-weight: 600; color: #1a1a1a; border-bottom: 3px solid #4e6ef2; padding-bottom: 12px; }
 .btn-trigger { padding: 8px 20px; background: #fff; color: #4e6ef2; border: 1px solid #4e6ef2; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500; }
 .btn-trigger:hover { background: #eef1ff; }
@@ -95,13 +95,13 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4e6ef2; curso
   </div>
 
   <div class="content">
+    <div class="notice-bar">
+      请在 <strong>2026年7月26日 0点前</strong> 完成下载。勾选需要导出的内容，点击确认开始下载。下载文件较大，下载时间可能较长，建议稍晚再返回本页面查看下载结果。下载完成后，您可在操作栏点击下载链接自行存储数据资产到本地。
+    </div>
+
     <div class="page-title-bar">
       <div class="page-title">个人数据资产下载</div>
       <button class="btn-trigger" id="btnTrigger" onclick="enterSelectMode()">下载资产</button>
-    </div>
-
-    <div class="notice-bar">
-      请在 <strong>2026年7月26日 0点前</strong> 完成下载。勾选需要导出的内容，点击确认开始下载。下载文件较大，下载时间可能较长，建议稍晚再返回本页面查看下载结果。下载完成后，您可在操作栏点击下载链接自行存储数据资产到本地。
     </div>
 
     <div class="action-bar" id="actionBar">
@@ -206,7 +206,7 @@ function renderTable(stateData) {
     const s = statusMap[item.status];
     const canCheck = item.status === 'none';
     let action = '';
-    if (item.status === 'none') action = '-';
+    if (item.status === 'none') action = '<button class="btn-download" onclick="singleDownload(this)">下载</button>';
     else if (item.status === 'queued' || item.status === 'downloading') action = '<button class="btn-download" disabled>下载</button>';
     else if (item.status === 'success') action = '<a class="download-link" href="#">下载链接</a>';
     else if (item.status === 'failed') action = '<button class="btn-retry">重新下载</button>';
@@ -243,6 +243,7 @@ function setState(state) {
 }
 
 function batchDownload() { exitSelectMode(); }
+function singleDownload(btn) { btn.disabled = true; btn.textContent = '已提交'; }
 
 renderTable(states.initial);
 </script>
