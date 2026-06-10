@@ -106,7 +106,6 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4e6ef2; curso
       <table>
         <thead>
           <tr>
-            <th class="col-check visible"><input type="checkbox" id="selectAll" onchange="toggleAll(this)"></th>
             <th>资产类别</th>
             <th>提交时间</th>
             <th>下载状态</th>
@@ -171,30 +170,18 @@ const statusMap = {
   failed: { label: '下载失败', cls: 'status-failed' }
 };
 
-let selectMode = false;
-
-function enterSelectMode() {
-  selectMode = true;
-  document.getElementById('actionBar').classList.add('visible');
-  document.getElementById('btnTrigger').style.display = 'none';
-  document.querySelectorAll('.col-check').forEach(el => el.classList.add('visible'));
+function setState(state) {
+  renderTable(states[state]);
+  document.querySelectorAll('.state-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
 }
 
-function exitSelectMode() {
-  selectMode = false;
-  document.getElementById('actionBar').classList.remove('visible');
-  document.getElementById('btnTrigger').style.display = '';
-  document.querySelectorAll('.col-check').forEach(el => el.classList.remove('visible'));
-  document.querySelectorAll('.row-check').forEach(cb => cb.checked = false);
-  document.getElementById('selectAll').checked = false;
-  updateSelection();
-}
+function singleDownload(btn) { btn.disabled = true; btn.textContent = '已提交'; }
 
 function renderTable(stateData) {
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = stateData.map((item, i) => {
     const s = statusMap[item.status];
-    const canCheck = item.status === 'none';
     let action = '';
     if (item.status === 'none') action = '<button class="btn-download" onclick="singleDownload(this)">下载</button>';
     else if (item.status === 'queued') action = '<button class="btn-retry" onclick="cancelTask(this)">取消</button>';
@@ -202,29 +189,13 @@ function renderTable(stateData) {
     else if (item.status === 'success') action = '<a class="download-link" href="#">下载链接</a>';
     else if (item.status === 'failed') action = '<button class="btn-retry">重新下载</button>';
     const failHtml = item.reason ? `<div class="fail-reason">${item.reason}</div>` : '';
-    const checkVis = 'col-check visible';
     return `<tr>
-      <td class="${checkVis}"><input type="checkbox" class="row-check" ${canCheck ? '' : 'disabled'} onchange="updateSelection()"></td>
       <td><div class="asset-name">${assets[i].name}</div><div class="asset-desc">${assets[i].desc}</div></td>
       <td style="color:#999;">${item.time}</td>
       <td><span class="status ${s.cls}">${s.label}</span>${failHtml}</td>
       <td>${action}</td>
     </tr>`;
   }).join('');
-  updateSelection();
-}
-
-function toggleAll(el) {
-  document.querySelectorAll('.row-check:not(:disabled)').forEach(cb => cb.checked = el.checked);
-  updateSelection();
-}
-
-function updateSelection() {
-  const checked = document.querySelectorAll('.row-check:checked').length;
-  const total = document.querySelectorAll('.row-check:not(:disabled)').length;
-  document.getElementById('selectedCount').textContent = checked;
-  document.getElementById('btnConfirm').disabled = checked === 0;
-  document.getElementById('selectAll').checked = total > 0 && checked === total;
 }
 
 function setState(state) {
@@ -233,9 +204,8 @@ function setState(state) {
   event.target.classList.add('active');
 }
 
-function batchDownload() {}
 function singleDownload(btn) { btn.disabled = true; btn.textContent = '已提交'; }
-function cancelTask(btn) { const tr = btn.closest('tr'); tr.querySelector('.status').className = 'status status-none'; tr.querySelector('.status').textContent = '未下载'; tr.querySelector('td:nth-child(3)').textContent = '-'; btn.outerHTML = '<button class="btn-download" onclick="singleDownload(this)">下载</button>'; }
+function cancelTask(btn) { const tr = btn.closest('tr'); tr.querySelector('.status').className = 'status status-none'; tr.querySelector('.status').textContent = '未下载'; tr.querySelector('td:nth-child(2)').textContent = '-'; btn.outerHTML = '<button class="btn-download" onclick="singleDownload(this)">下载</button>'; }
 
 renderTable(states.initial);
 </script>
