@@ -244,7 +244,7 @@ function setState(state) {
 
 function batchDownload() { exitSelectMode(); }
 function singleDownload(btn) { btn.disabled = true; btn.textContent = '已提交'; }
-function cancelTask(btn) { btn.textContent = '已取消'; btn.disabled = true; btn.style.opacity = '0.5'; }
+function cancelTask(btn) { const tr = btn.closest('tr'); tr.querySelector('.status').className = 'status status-none'; tr.querySelector('.status').textContent = '未下载'; tr.querySelector('td:nth-child(3)').textContent = '-'; btn.outerHTML = '<button class="btn-download" onclick="singleDownload(this)">下载</button>'; }
 
 renderTable(states.initial);
 </script>
